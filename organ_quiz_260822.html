@@ -1,0 +1,111 @@
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>뚝딱! 특별한 우리 몸 탐험 퀴즈</title>
+    <style>
+        body { font-family: 'Pretendard', sans-serif; background-color: #fdf6f9; text-align: center; padding: 20px; }
+        .quiz-container { background-color: white; border-radius: 20px; padding: 30px; max-width: 500px; margin: auto; box-shadow: 0 4px 15px rgba(0,0,0,0.1); position: relative; min-height: 400px; }
+        .emoji-display { font-size: 80px; margin: 20px 0; }
+        .question-text { font-size: 20px; font-weight: bold; color: #333; margin-bottom: 20px; }
+        .option-btn { display: block; width: 100%; padding: 15px; margin: 10px 0; border: none; border-radius: 15px; background-color: #fff1f5; font-size: 16px; cursor: pointer; transition: 0.3s; }
+        .option-btn:hover { background-color: #ffdae3; }
+        
+        #feedback { 
+            font-size: 120px; font-weight: bold; position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+            display: flex; align-items: center; justify-content: center; background: rgba(255, 255, 255, 0.8); 
+            border-radius: 20px; display: none; z-index: 10;
+        }
+        
+        #result-screen { display: none; padding: 40px; }
+        #progress-bar { width: 100%; height: 10px; background-color: #eee; border-radius: 5px; margin-bottom: 20px; }
+        #progress-fill { height: 100%; width: 0%; background-color: #ff85a2; border-radius: 5px; transition: 0.3s; }
+    </style>
+</head>
+<body>
+    <div class="quiz-container">
+        <h1>우리 몸 탐험 퀴즈</h1>
+        <div id="progress-bar"><div id="progress-fill"></div></div>
+        
+        <div id="quiz-area">
+            <div id="organ-emoji" class="emoji-display"></div>
+            <div id="question-text" class="question-text"></div>
+            <div id="choices-container"></div>
+        </div>
+        
+        <div id="result-screen">
+            <h2>🎉 대단해요!</h2>
+            <p>모든 퀴즈를 다 풀었어요!</p>
+            <button class="option-btn" onclick="location.reload()">다시 풀러가기</button>
+        </div>
+
+        <div id="feedback"></div>
+    </div>
+
+    <script>
+        const quizData = [
+            { question: "쿵쾅쿵쾅 소리를 내며 온몸으로 피를 보내주는 친구는?", emoji: "💖", options: ["심장", "발가락", "머리카락"], answer: "심장" },
+            { question: "내 심장의 크기는 무엇과 가장 비슷할까요?", emoji: "✊", options: ["콧구멍", "내 주먹", "거대한 수박"], answer: "내 주먹" },
+            { question: "운동장에서 신나게 뛰어놀고 나면 심장은 어떻게 될까요?", emoji: "🏃‍♂️", options: ["소리가 안 나요", "아주 느려져요", "아주 빠르게 쿵쾅거려요"], answer: "아주 빠르게 쿵쾅거려요" },
+            { question: "내 몸의 대장님! 생각하고 기억하는 곳은 어디일까요?", emoji: "🧠", options: ["뇌", "무릎", "손톱"], answer: "뇌" },
+            { question: "잠을 잘 때 뇌는 무엇을 하나요?", emoji: "😴", options: ["그냥 쉬기만 해요", "오늘 일을 정리하고 꿈을 꿔요", "아무것도 안 해요"], answer: "오늘 일을 정리하고 꿈을 꿔요" },
+            { question: "우리가 예쁜 꽃을 보면 '아 예쁘다'라고 느끼게 해주는 곳은?", emoji: "🌸", options: ["배꼽", "뇌", "발꿈치"], answer: "뇌" },
+            { question: "우리가 맛있게 먹은 음식이 가장 먼저 도착하는 곳은?", emoji: "😋", options: ["위", "발가락", "귀"], answer: "위" },
+            { question: "위는 음식을 어떻게 해주나요?", emoji: "🥣", options: ["음식을 얼려요", "음식을 잘게 부수고 소화해요", "음식을 밖으로 바로 보내요"], answer: "음식을 잘게 부수고 소화해요" },
+            { question: "음식을 너무 급하게 먹으면 위가 어떻게 될까요?", emoji: "😖", options: ["아파서 끙끙거려요", "더 튼튼해져요", "웃음이 나요"], answer: "아파서 끙끙거려요" },
+            { question: "음식의 영양분을 쏙쏙 흡수하고 응가를 만드는 곳은?", emoji: "💩", options: ["장", "코", "머리카락"], answer: "장" },
+            { question: "장이 건강하려면 무엇을 많이 먹어야 할까요?", emoji: "🥦", options: ["사탕", "채소와 과일", "돌멩이"], answer: "채소와 과일" },
+            { question: "장을 튼튼하게 해주려면 어떻게 해야 할까요?", emoji: "🤸", options: ["하루 종일 누워있기", "매일매일 쑥쑥 움직이기", "안 먹기"], answer: "매일매일 쑥쑥 움직이기" },
+            { question: "숨을 들이마시고 내뱉을 때 공기가 들어가는 곳은?", emoji: "🫁", options: ["폐", "손톱", "발"], answer: "폐" },
+            { question: "우리가 숨을 쉬지 않으면 어떻게 될까요?", emoji: "😤", options: ["몸이 가뿐해져요!", "숨이 차서 힘들어요!", "더 힘이 나요!"], answer: "숨이 차서 힘들어요!" },
+            { question: "맑은 공기를 마시기 위해 우리는 어디서 노는 게 좋을까요?", emoji: "🌳", options: ["자동차 매연 많은 곳", "나무가 많은 공원", "꽉 막힌 방"], answer: "나무가 많은 공원" }
+        ];
+
+        let currentIndex = 0;
+        const feedback = document.getElementById('feedback');
+        const quizArea = document.getElementById('quiz-area');
+        const resultScreen = document.getElementById('result-screen');
+
+        function showFeedback(text, color) {
+            feedback.textContent = text;
+            feedback.style.color = color;
+            feedback.style.display = 'flex';
+            setTimeout(() => { feedback.style.display = 'none'; }, 800);
+        }
+
+        function loadQuestion() {
+            const data = quizData[currentIndex];
+            document.getElementById('organ-emoji').textContent = data.emoji;
+            document.getElementById('question-text').textContent = data.question;
+            const container = document.getElementById('choices-container');
+            container.innerHTML = '';
+            data.options.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.textContent = opt;
+                btn.onclick = () => {
+                    if (opt === data.answer) {
+                        showFeedback("O", "#4caf50");
+                        setTimeout(() => {
+                            if(currentIndex < quizData.length - 1) { 
+                                currentIndex++; 
+                                loadQuestion(); 
+                            } else {
+                                quizArea.style.display = 'none';
+                                resultScreen.style.display = 'block';
+                            }
+                        }, 800);
+                    } else {
+                        showFeedback("X", "#f44336");
+                    }
+                };
+                container.appendChild(btn);
+            });
+            document.getElementById('progress-fill').style.width = ((currentIndex + 1) / quizData.length * 100) + "%";
+        }
+        loadQuestion();
+    </script>
+</body>
+</html>
